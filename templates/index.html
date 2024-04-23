@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conversation App</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#transcribe-btn').click(function() {
+                $.ajax({
+                    url: '/transcribe',
+                    type: 'POST',
+                    success: function(response) {
+                        $('#conversation').append('<p><strong>Human:</strong> ' + response + '</p>');
+                        $.ajax({
+                            url: '/respond',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ user_input: response }),
+                            success: function(response) {
+                                $('#conversation').append('<p><strong>AI:</strong> ' + response.text + '</p>');
+                                playAudio();
+                            },
+                            error: function() {
+                                console.error('Error occurred while getting the AI response.');
+                            }
+                        });
+                    }
+                });
+            });
+
+            function playAudio() {
+                var audioUrl = '/static/response_audio.mp3';
+                var audio = new Audio(audioUrl);
+                audio.oncanplaythrough = function() {
+                    audio.play();
+                };
+                audio.onerror = function() {
+                    console.error('Error occurred while playing the audio.');
+                };
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>Conversation App</h1>
+    <button id="transcribe-btn">Transcribe</button>
+    <div id="conversation"></div>
+</body>
+</html>
